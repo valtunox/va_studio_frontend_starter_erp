@@ -1,259 +1,966 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
-  ShoppingCart, Search, Menu, Star, Heart, Eye, ChevronRight,
-  Truck, Shield, RotateCcw, Headphones, X, Plus, Minus, Trash2,
-  ArrowRight, Zap, Clock, Tag, TrendingUp, Package, Gift,
-  Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone,
-  ChevronDown, Filter, Grid3X3, LayoutList
+  LayoutDashboard, Package, ShoppingCart, Users, BarChart3,
+  Settings, Tag, Megaphone, Search, Bell, ChevronDown, Plus,
+  TrendingUp, TrendingDown, DollarSign, ShoppingBag, Eye,
+  ArrowUpRight, ArrowDownRight, Filter, MoreHorizontal,
+  ChevronRight, LogOut, CreditCard, Truck, Star, RefreshCw
 } from 'lucide-react'
-import { Menu as HeadlessMenu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { ThemeSwitcher } from '@/components/shared/ThemeSwitcher'
+import { Sparkline, DonutChart, AreaChart, BarChart } from '@/components/shared/MiniChart'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabContent } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
 
 /* ------------------------------------------------------------------ */
 /*  DATA                                                               */
 /* ------------------------------------------------------------------ */
 
-const categories = [
-  { id: 1, name: 'Electronics', icon: Zap, count: 234, color: 'from-blue-500 to-indigo-600', image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop' },
-  { id: 2, name: 'Fashion', icon: Tag, count: 512, color: 'from-pink-500 to-rose-600', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=300&fit=crop' },
-  { id: 3, name: 'Home & Living', icon: Package, count: 189, color: 'from-amber-500 to-orange-600', image: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400&h=300&fit=crop' },
-  { id: 4, name: 'Sports', icon: TrendingUp, count: 97, color: 'from-emerald-500 to-teal-600', image: 'https://images.unsplash.com/photo-1461896836934-bd45ba8fcf9b?w=400&h=300&fit=crop' },
-  { id: 5, name: 'Beauty', icon: Gift, count: 321, color: 'from-purple-500 to-violet-600', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop' },
-  { id: 6, name: 'Books', icon: Package, count: 156, color: 'from-cyan-500 to-blue-600', image: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&h=300&fit=crop' },
+const salesTrendData = [
+  { value: 3200, label: 'W1' }, { value: 4100, label: '' }, { value: 3800, label: '' },
+  { value: 5200, label: 'W2' }, { value: 4600, label: '' }, { value: 5800, label: '' },
+  { value: 6200, label: 'W3' }, { value: 5400, label: '' }, { value: 7100, label: '' },
+  { value: 6800, label: 'W4' }, { value: 8200, label: '' }, { value: 7600, label: '' },
 ]
 
-const featuredProducts = [
-  { id: 1, name: 'Sony WH-1000XM5', price: 349.99, originalPrice: 399.99, rating: 4.8, reviews: 2341, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop', badge: 'Best Seller', category: 'Electronics' },
-  { id: 2, name: 'Apple Watch Ultra 2', price: 799.00, originalPrice: null, rating: 4.9, reviews: 1892, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop', badge: 'New', category: 'Electronics' },
-  { id: 3, name: 'Ergonomic Laptop Stand', price: 49.99, originalPrice: 79.99, rating: 4.5, reviews: 876, image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&h=500&fit=crop', badge: '37% Off', category: 'Home & Living' },
-  { id: 4, name: 'Premium Leather Bag', price: 189.00, originalPrice: null, rating: 4.7, reviews: 543, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500&h=500&fit=crop', badge: null, category: 'Fashion' },
-  { id: 5, name: 'Minimalist Desk Lamp', price: 65.00, originalPrice: 85.00, rating: 4.3, reviews: 312, image: 'https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=500&h=500&fit=crop', badge: 'Sale', category: 'Home & Living' },
-  { id: 6, name: 'Running Shoes Pro', price: 129.99, originalPrice: 159.99, rating: 4.6, reviews: 1205, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop', badge: 'Popular', category: 'Sports' },
-  { id: 7, name: 'Wireless Earbuds', price: 79.99, originalPrice: 99.99, rating: 4.4, reviews: 2103, image: 'https://images.unsplash.com/photo-1590658268037-6bf12f032f55?w=500&h=500&fit=crop', badge: null, category: 'Electronics' },
-  { id: 8, name: 'Ceramic Plant Pot Set', price: 34.99, originalPrice: null, rating: 4.2, reviews: 198, image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500&h=500&fit=crop', badge: 'New', category: 'Home & Living' },
+const revenueSparkline = [42, 48, 35, 52, 61, 55, 68, 72, 65, 78, 82, 88, 79, 92]
+const ordersSparkline = [22, 28, 25, 32, 35, 30, 38, 42, 36, 45, 40, 48, 44, 52]
+const aovSparkline = [65, 70, 68, 72, 75, 71, 78, 80, 76, 82, 79, 84, 81, 80]
+const abandonSparkline = [75, 72, 74, 70, 68, 71, 66, 69, 67, 65, 68, 64, 66, 68]
+
+const topProducts = [
+  { name: 'MacBook Pro 14" M3', units: 342, revenue: 856580, color: 'bg-blue-500' },
+  { name: 'iPhone 15 Pro Max', units: 528, revenue: 633072, color: 'bg-indigo-500' },
+  { name: 'AirPods Pro 2nd Gen', units: 891, revenue: 222309, color: 'bg-violet-500' },
+  { name: 'Sony WH-1000XM5', units: 467, revenue: 163345, color: 'bg-purple-500' },
+  { name: 'Samsung Galaxy S24 Ultra', units: 305, revenue: 365695, color: 'bg-fuchsia-500' },
 ]
 
-const dealProducts = [
-  { id: 101, name: 'Mechanical Keyboard RGB', price: 69.99, originalPrice: 129.99, rating: 4.6, reviews: 1543, image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&h=500&fit=crop', endsIn: '02:14:33', discount: 46 },
-  { id: 102, name: 'Noise Cancelling Buds', price: 39.99, originalPrice: 89.99, rating: 4.3, reviews: 892, image: 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=500&h=500&fit=crop', endsIn: '05:42:11', discount: 56 },
-  { id: 103, name: '4K Webcam Pro', price: 59.99, originalPrice: 119.99, rating: 4.5, reviews: 667, image: 'https://images.unsplash.com/photo-1587826080692-f439cd0b70da?w=500&h=500&fit=crop', endsIn: '11:08:45', discount: 50 },
-  { id: 104, name: 'Portable Charger 20000mAh', price: 24.99, originalPrice: 49.99, rating: 4.7, reviews: 3201, image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=500&h=500&fit=crop', endsIn: '08:22:17', discount: 50 },
+const categoryData = [
+  { name: 'Electronics', value: 42, color: '#3b82f6' },
+  { name: 'Clothing', value: 24, color: '#8b5cf6' },
+  { name: 'Home', value: 18, color: '#f59e0b' },
+  { name: 'Sports', value: 10, color: '#10b981' },
+  { name: 'Beauty', value: 6, color: '#ec4899' },
 ]
 
-const testimonials = [
-  { id: 1, name: 'Sarah Johnson', role: 'Verified Buyer', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face', rating: 5, text: 'Absolutely love the quality of products here. Fast shipping and the customer service is outstanding. Will definitely be ordering again!' },
-  { id: 2, name: 'Michael Chen', role: 'Verified Buyer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', rating: 5, text: 'Best online shopping experience I\'ve had. The product descriptions are accurate and the prices are very competitive. Highly recommend!' },
-  { id: 3, name: 'Emily Rodriguez', role: 'Verified Buyer', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face', rating: 4, text: 'Great selection and easy checkout process. The deals section always has amazing finds. My go-to store for electronics and home goods.' },
+const recentOrders = [
+  { id: '#ORD-7291', customer: 'Emma Watson', total: 349.99, status: 'Shipped', time: '12 min ago' },
+  { id: '#ORD-7290', customer: 'James Chen', total: 1249.00, status: 'Processing', time: '28 min ago' },
+  { id: '#ORD-7289', customer: 'Sofia Rodriguez', total: 89.50, status: 'Delivered', time: '1 hr ago' },
+  { id: '#ORD-7288', customer: 'Liam Patel', total: 429.00, status: 'Pending', time: '2 hr ago' },
+  { id: '#ORD-7287', customer: 'Olivia Brown', total: 199.99, status: 'Shipped', time: '3 hr ago' },
 ]
 
-const brands = [
-  'Apple', 'Samsung', 'Sony', 'Nike', 'Adidas', 'Bose', 'Dell', 'LG'
+const products = [
+  { id: 1, name: 'MacBook Pro 14" M3', sku: 'MBP-14-M3', category: 'Electronics', price: 2499.00, stock: 48, status: 'Active', color: 'bg-slate-700' },
+  { id: 2, name: 'iPhone 15 Pro Max', sku: 'IPH-15PM', category: 'Electronics', price: 1199.00, stock: 124, status: 'Active', color: 'bg-blue-600' },
+  { id: 3, name: 'AirPods Pro 2nd Gen', sku: 'APP-2G', category: 'Electronics', price: 249.00, stock: 312, status: 'Active', color: 'bg-gray-200' },
+  { id: 4, name: 'Nike Air Max 90', sku: 'NK-AM90', category: 'Clothing', price: 129.99, stock: 87, status: 'Active', color: 'bg-red-500' },
+  { id: 5, name: 'Levi\'s 501 Original', sku: 'LV-501', category: 'Clothing', price: 69.50, stock: 0, status: 'Out of Stock', color: 'bg-indigo-700' },
+  { id: 6, name: 'Dyson V15 Detect', sku: 'DY-V15', category: 'Home', price: 749.99, stock: 23, status: 'Active', color: 'bg-purple-600' },
+  { id: 7, name: 'Sony WH-1000XM5', sku: 'SN-XM5', category: 'Electronics', price: 349.99, stock: 156, status: 'Active', color: 'bg-stone-800' },
+  { id: 8, name: 'Patagonia Better Sweater', sku: 'PT-BS', category: 'Clothing', price: 139.00, stock: 5, status: 'Draft', color: 'bg-sky-600' },
+  { id: 9, name: 'Yeti Rambler 26oz', sku: 'YT-R26', category: 'Home', price: 40.00, stock: 445, status: 'Active', color: 'bg-teal-500' },
+  { id: 10, name: 'Theragun Elite', sku: 'TG-ELT', category: 'Sports', price: 399.00, stock: 34, status: 'Active', color: 'bg-emerald-600' },
+  { id: 11, name: 'La Mer Moisturizer', sku: 'LM-MST', category: 'Beauty', price: 190.00, stock: 0, status: 'Out of Stock', color: 'bg-amber-200' },
+  { id: 12, name: 'Samsung Galaxy S24 Ultra', sku: 'SG-S24U', category: 'Electronics', price: 1299.99, stock: 67, status: 'Active', color: 'bg-violet-600' },
+  { id: 13, name: 'Adidas Ultraboost 23', sku: 'AD-UB23', category: 'Sports', price: 189.99, stock: 92, status: 'Draft', color: 'bg-black' },
 ]
 
-const navLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Shop', href: '#products' },
-  { label: 'Categories', href: '#categories' },
-  { label: 'Deals', href: '#deals' },
-  { label: 'About', href: '#about' },
+const orders = [
+  { id: '#ORD-7291', customer: 'Emma Watson', date: '2026-02-25', items: 3, total: 349.99, status: 'Shipped', payment: 'Visa' },
+  { id: '#ORD-7290', customer: 'James Chen', date: '2026-02-25', items: 1, total: 1249.00, status: 'Processing', payment: 'Mastercard' },
+  { id: '#ORD-7289', customer: 'Sofia Rodriguez', date: '2026-02-24', items: 2, total: 89.50, status: 'Delivered', payment: 'PayPal' },
+  { id: '#ORD-7288', customer: 'Liam Patel', date: '2026-02-24', items: 4, total: 429.00, status: 'Pending', payment: 'Visa' },
+  { id: '#ORD-7287', customer: 'Olivia Brown', date: '2026-02-24', items: 1, total: 199.99, status: 'Shipped', payment: 'Apple Pay' },
+  { id: '#ORD-7286', customer: 'Noah Kim', date: '2026-02-23', items: 2, total: 578.00, status: 'Delivered', payment: 'Mastercard' },
+  { id: '#ORD-7285', customer: 'Ava Johnson', date: '2026-02-23', items: 5, total: 312.50, status: 'Returned', payment: 'Visa' },
+  { id: '#ORD-7284', customer: 'Ethan Garcia', date: '2026-02-22', items: 1, total: 2499.00, status: 'Delivered', payment: 'PayPal' },
+  { id: '#ORD-7283', customer: 'Mia Thompson', date: '2026-02-22', items: 3, total: 167.97, status: 'Processing', payment: 'Apple Pay' },
+  { id: '#ORD-7282', customer: 'Lucas Martinez', date: '2026-02-21', items: 2, total: 739.98, status: 'Shipped', payment: 'Visa' },
+  { id: '#ORD-7281', customer: 'Isabella Davis', date: '2026-02-21', items: 1, total: 129.99, status: 'Pending', payment: 'Mastercard' },
+  { id: '#ORD-7280', customer: 'Mason Wilson', date: '2026-02-20', items: 6, total: 445.94, status: 'Delivered', payment: 'PayPal' },
+]
+
+const customers = [
+  { id: 1, name: 'Emma Watson', email: 'emma.watson@email.com', orders: 24, spent: 4820.50, lastOrder: '2026-02-25', tier: 'Platinum', avatar: 'EW' },
+  { id: 2, name: 'James Chen', email: 'james.chen@email.com', orders: 18, spent: 3540.00, lastOrder: '2026-02-25', tier: 'Gold', avatar: 'JC' },
+  { id: 3, name: 'Sofia Rodriguez', email: 'sofia.r@email.com', orders: 31, spent: 6210.75, lastOrder: '2026-02-24', tier: 'Platinum', avatar: 'SR' },
+  { id: 4, name: 'Liam Patel', email: 'liam.patel@email.com', orders: 7, spent: 1290.00, lastOrder: '2026-02-24', tier: 'Silver', avatar: 'LP' },
+  { id: 5, name: 'Olivia Brown', email: 'olivia.b@email.com', orders: 12, spent: 2180.30, lastOrder: '2026-02-24', tier: 'Gold', avatar: 'OB' },
+  { id: 6, name: 'Noah Kim', email: 'noah.kim@email.com', orders: 3, spent: 578.00, lastOrder: '2026-02-23', tier: 'Bronze', avatar: 'NK' },
+  { id: 7, name: 'Ava Johnson', email: 'ava.j@email.com', orders: 15, spent: 2875.25, lastOrder: '2026-02-23', tier: 'Gold', avatar: 'AJ' },
+  { id: 8, name: 'Ethan Garcia', email: 'ethan.g@email.com', orders: 9, spent: 4120.00, lastOrder: '2026-02-22', tier: 'Silver', avatar: 'EG' },
+]
+
+const acquisitionData = [
+  { value: 120, label: 'Sep' }, { value: 145, label: 'Oct' },
+  { value: 168, label: 'Nov' }, { value: 195, label: 'Dec' },
+  { value: 210, label: 'Jan' }, { value: 248, label: 'Feb' },
+]
+
+const monthlyRevenueData = [
+  { value: 42000, label: 'Sep', color: '#6366f1' },
+  { value: 51000, label: 'Oct', color: '#6366f1' },
+  { value: 48000, label: 'Nov', color: '#6366f1' },
+  { value: 72000, label: 'Dec', color: '#8b5cf6' },
+  { value: 55000, label: 'Jan', color: '#6366f1' },
+  { value: 68000, label: 'Feb', color: '#10b981' },
+]
+
+const trafficSources = [
+  { source: 'Organic Search', visitors: 12480, pct: 38, color: 'bg-blue-500' },
+  { source: 'Direct', visitors: 8240, pct: 25, color: 'bg-indigo-500' },
+  { source: 'Social Media', visitors: 5890, pct: 18, color: 'bg-violet-500' },
+  { source: 'Email Campaign', visitors: 3940, pct: 12, color: 'bg-amber-500' },
+  { source: 'Referral', visitors: 2310, pct: 7, color: 'bg-emerald-500' },
+]
+
+const funnelSteps = [
+  { label: 'Store Visits', value: 32860, pct: 100 },
+  { label: 'Added to Cart', value: 9858, pct: 30 },
+  { label: 'Reached Checkout', value: 5272, pct: 16 },
+  { label: 'Completed Purchase', value: 3286, pct: 10 },
+]
+
+const productPerformance = [
+  { name: 'MacBook Pro 14"', views: 8420, conversion: 4.1, revenue: 856580, trend: 'up' },
+  { name: 'iPhone 15 Pro Max', views: 12300, conversion: 4.3, revenue: 633072, trend: 'up' },
+  { name: 'AirPods Pro 2', views: 9100, conversion: 9.8, revenue: 222309, trend: 'up' },
+  { name: 'Sony WH-1000XM5', views: 6200, conversion: 7.5, revenue: 163345, trend: 'down' },
+  { name: 'Galaxy S24 Ultra', views: 5800, conversion: 5.3, revenue: 365695, trend: 'up' },
 ]
 
 /* ------------------------------------------------------------------ */
-/*  COMPONENTS                                                         */
+/*  HELPERS                                                            */
 /* ------------------------------------------------------------------ */
 
-function PromoBar() {
-  const [visible, setVisible] = useState(true)
-  if (!visible) return null
+const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)
+const fmtFull = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+const fmtNum = (n) => new Intl.NumberFormat('en-US').format(n)
+
+function statusBadge(status) {
+  const map = {
+    Active: 'success', Shipped: 'info', Delivered: 'success', Processing: 'warning',
+    Pending: 'secondary', Returned: 'error', Draft: 'secondary', 'Out of Stock': 'error',
+  }
+  return <Badge variant={map[status] || 'default'}>{status}</Badge>
+}
+
+function tierBadge(tier) {
+  const map = { Bronze: 'secondary', Silver: 'info', Gold: 'warning', Platinum: 'success' }
+  return <Badge variant={map[tier] || 'default'}>{tier}</Badge>
+}
+
+const sidebarNav = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, section: null },
+  { id: 'products', label: 'Products', icon: Package, section: 'Catalog' },
+  { id: 'orders', label: 'Orders', icon: ShoppingCart, section: 'Catalog' },
+  { id: 'customers', label: 'Customers', icon: Users, section: null },
+  { id: 'marketing', label: 'Marketing', icon: Megaphone, section: null },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3, section: null },
+  { id: 'settings', label: 'Settings', icon: Settings, section: null },
+]
+
+/* ------------------------------------------------------------------ */
+/*  SIDEBAR                                                            */
+/* ------------------------------------------------------------------ */
+
+function Sidebar({ activeTab, onTabChange }) {
+  let lastSection = null
   return (
-    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm py-2 px-4 text-center relative">
-      <span className="inline-flex items-center gap-2">
-        <Zap className="w-4 h-4" />
-        Free shipping on orders over $50 &mdash; Use code <strong className="mx-1">WELCOME15</strong> for 15% off your first order
-        <Zap className="w-4 h-4" />
-      </span>
-      <button onClick={() => setVisible(false)} className="absolute right-4 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity">
-        <X className="w-4 h-4" />
-      </button>
+    <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-screen sticky top-0 shrink-0">
+      <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 dark:border-slate-800">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <ShoppingBag className="w-4.5 h-4.5 text-white" />
+        </div>
+        <span className="font-display text-lg font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">ShopAdmin</span>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {sidebarNav.map((item) => {
+          const showSection = item.section && item.section !== lastSection
+          if (item.section) lastSection = item.section
+          const Icon = item.icon
+          const isActive = activeTab === item.id
+          return (
+            <div key={item.id}>
+              {showSection && (
+                <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">{item.section}</p>
+              )}
+              <button
+                onClick={() => {
+                  if (['dashboard', 'products', 'orders', 'customers', 'analytics'].includes(item.id)) {
+                    onTabChange(item.id)
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-indigo-600 dark:text-indigo-400' : ''}`} />
+                {item.label}
+                {item.id === 'orders' && (
+                  <span className="ml-auto text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full">3</span>
+                )}
+              </button>
+            </div>
+          )
+        })}
+      </nav>
+
+      <div className="px-3 py-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
+            JW
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">Joel Wembo</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">Store Admin</p>
+          </div>
+          <button className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  TOP BAR                                                            */
+/* ------------------------------------------------------------------ */
+
+function TopBar({ activeTab, onTabChange }) {
+  return (
+    <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800 h-16">
+      <div className="flex items-center justify-between h-full px-4 lg:px-8">
+        <div className="flex items-center gap-4">
+          <div className="lg:hidden flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-display text-lg font-bold">ShopAdmin</span>
+          </div>
+          <div className="relative hidden sm:block">
+            <Input
+              placeholder="Search orders, products, customers..."
+              className="w-72 lg:w-96 pl-10 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg text-sm h-9"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button className="relative p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+          </button>
+          <div className="hidden lg:flex items-center gap-2 pl-2 ml-2 border-l border-slate-200 dark:border-slate-800">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+              JW
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          </div>
+
+          <div className="flex lg:hidden items-center gap-1 ml-2">
+            {['dashboard', 'products', 'orders', 'customers', 'analytics'].map((tab) => {
+              const icons = { dashboard: LayoutDashboard, products: Package, orders: ShoppingCart, customers: Users, analytics: BarChart3 }
+              const Icon = icons[tab]
+              return (
+                <button
+                  key={tab}
+                  onClick={() => onTabChange(tab)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    activeTab === tab ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  <Icon className="w-4.5 h-4.5" />
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  DASHBOARD TAB                                                      */
+/* ------------------------------------------------------------------ */
+
+function DashboardTab() {
+  const kpis = [
+    { title: 'Revenue Today', value: '$12,480', change: '+14.2%', up: true, data: revenueSparkline, color: '#10b981', icon: DollarSign },
+    { title: 'Orders', value: '156', change: '+8.1%', up: true, data: ordersSparkline, color: '#6366f1', icon: ShoppingCart },
+    { title: 'Avg Order Value', value: '$79.90', change: '+3.4%', up: true, data: aovSparkline, color: '#8b5cf6', icon: CreditCard },
+    { title: 'Cart Abandonment', value: '68%', change: '-2.1%', up: false, data: abandonSparkline, color: '#f59e0b', icon: ShoppingBag },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Dashboard</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Welcome back. Here is your store overview.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="h-9 text-sm gap-2">
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </Button>
+          <Button className="h-9 text-sm bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+            <Plus className="w-3.5 h-3.5" /> New Order
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {kpis.map((kpi) => {
+          const Icon = kpi.icon
+          return (
+            <Card key={kpi.title} className="overflow-hidden">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                    <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                  </div>
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold ${kpi.up ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {kpi.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    {kpi.change}
+                  </span>
+                </div>
+                <p className="text-2xl font-bold font-display">{kpi.value}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-3">{kpi.title}</p>
+                <Sparkline data={kpi.data} color={kpi.color} height={28} fill />
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <Card className="xl:col-span-2">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Sales Trend</CardTitle>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Last 30 days</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <AreaChart data={salesTrendData} height={180} color="#6366f1" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Revenue by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-2">
+              <DonutChart value={42} max={100} size={120} strokeWidth={14} color="#3b82f6" label="42%" sublabel="Electronics" />
+            </div>
+            <div className="space-y-2.5 mt-4">
+              {categoryData.map((cat) => (
+                <div key={cat.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{cat.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold">{cat.value}%</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Top Selling Products</CardTitle>
+              <button className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">View all</button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {topProducts.map((prod, i) => (
+                <div key={prod.name} className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-slate-400 w-4">{i + 1}</span>
+                  <div className={`w-10 h-10 rounded-lg ${prod.color} shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{prod.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{fmtNum(prod.units)} units sold</p>
+                  </div>
+                  <span className="text-sm font-semibold">{fmt(prod.revenue)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Recent Orders</CardTitle>
+              <button className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">View all</button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <Package className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium">{order.id}</p>
+                      {statusBadge(order.status)}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{order.customer} - {order.time}</p>
+                  </div>
+                  <span className="text-sm font-semibold">{fmtFull(order.total)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
 
-function ProductCard({ product, onAddToCart, onToggleWishlist, wishlist }) {
-  const [hovered, setHovered] = useState(false)
-  const isWished = wishlist.has(product.id)
-  const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : null
+/* ------------------------------------------------------------------ */
+/*  PRODUCTS TAB                                                       */
+/* ------------------------------------------------------------------ */
+
+function ProductsTab() {
+  const [filter, setFilter] = useState('All')
+  const filters = ['All', 'Active', 'Draft', 'Out of Stock']
+  const filtered = filter === 'All' ? products : products.filter((p) => p.status === filter)
 
   return (
-    <Card
-      className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-800 relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
-        {product.badge && (
-          <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-600 text-white shadow-lg">
-            {product.badge}
-          </span>
-        )}
-        {discount && !product.badge && (
-          <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-500 text-white shadow-lg">
-            -{discount}%
-          </span>
-        )}
-        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-all duration-300 ${hovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'}`}>
-          <button
-            onClick={() => onToggleWishlist(product.id)}
-            className={`p-2 rounded-full shadow-md transition-colors ${isWished ? 'bg-red-500 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'}`}
-          >
-            <Heart className={`w-4 h-4 ${isWished ? 'fill-current' : ''}`} />
-          </button>
-          <button className="p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 transition-colors">
-            <Eye className="w-4 h-4" />
-          </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Products</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{products.length} products in your catalog</p>
         </div>
-        <div className={`absolute bottom-0 left-0 right-0 p-3 transition-all duration-300 ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <Button
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
-            onClick={() => onAddToCart(product)}
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
-          </Button>
-        </div>
-      </div>
-      <CardContent className="p-4">
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide">{product.category}</p>
-        <h3 className="font-semibold text-base mb-2 line-clamp-1">{product.name}</h3>
-        <div className="flex items-center gap-1 mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`w-3.5 h-3.5 ${i < Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
-            />
-          ))}
-          <span className="text-xs text-slate-500 ml-1">({product.reviews?.toLocaleString()})</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">${product.price.toFixed(2)}</span>
-          {product.originalPrice && (
-            <span className="text-sm text-slate-400 line-through">${product.originalPrice.toFixed(2)}</span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function DealCard({ deal, onAddToCart }) {
-  return (
-    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-800 group">
-      <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
-        <img src={deal.image} alt={deal.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-        <span className="absolute top-3 left-3 px-3 py-1.5 text-sm font-bold rounded-full bg-red-500 text-white shadow-lg">
-          -{deal.discount}%
-        </span>
-      </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-base mb-1 line-clamp-1">{deal.name}</h3>
-        <div className="flex items-center gap-1 mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Star key={i} className={`w-3.5 h-3.5 ${i < Math.floor(deal.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
-          ))}
-          <span className="text-xs text-slate-500 ml-1">({deal.reviews?.toLocaleString()})</span>
-        </div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-red-500 font-bold text-lg">${deal.price.toFixed(2)}</span>
-          <span className="text-sm text-slate-400 line-through">${deal.originalPrice.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-3">
-          <Clock className="w-3.5 h-3.5 text-red-500" />
-          <span>Ends in <strong className="text-red-500">{deal.endsIn}</strong></span>
-        </div>
-        <Button className="w-full bg-red-500 hover:bg-red-600 text-white" onClick={() => onAddToCart(deal)}>
-          Grab Deal
+        <Button className="h-9 text-sm bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+          <Plus className="w-3.5 h-3.5" /> Add Product
         </Button>
-      </CardContent>
-    </Card>
-  )
-}
+      </div>
 
-function CartDrawer({ open, onClose, cart, onUpdateQty, onRemove }) {
-  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
-
-  return (
-    <>
-      <div className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 z-50 shadow-2xl transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
-            <h2 className="text-xl font-bold">Shopping Cart ({cart.length})</h2>
-            <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-              <X className="w-5 h-5" />
-            </button>
+      <Card>
+        <CardContent className="p-0">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              {filters.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    filter === f
+                      ? 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {f}
+                  <span className="ml-1 text-[10px]">
+                    ({f === 'All' ? products.length : products.filter((p) => p.status === f).length})
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                <Filter className="w-3 h-3" /> Filter
+              </Button>
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {cart.length === 0 ? (
-              <div className="text-center py-12">
-                <ShoppingCart className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-                <p className="text-slate-500 dark:text-slate-400 text-lg">Your cart is empty</p>
-                <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Add items to get started</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                  <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-5 py-3">Product</th>
+                  <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">SKU</th>
+                  <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Category</th>
+                  <th className="text-right font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Price</th>
+                  <th className="text-right font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Stock</th>
+                  <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Status</th>
+                  <th className="text-center font-medium text-slate-500 dark:text-slate-400 px-3 py-3 w-10" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {filtered.map((prod) => (
+                  <tr key={prod.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg ${prod.color} shrink-0`} />
+                        <span className="font-medium">{prod.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-slate-500 dark:text-slate-400 font-mono text-xs">{prod.sku}</td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">{prod.category}</td>
+                    <td className="px-3 py-3 text-right font-semibold">{fmtFull(prod.price)}</td>
+                    <td className="px-3 py-3 text-right">
+                      <span className={prod.stock === 0 ? 'text-red-500 font-semibold' : prod.stock < 10 ? 'text-amber-500 font-semibold' : ''}>
+                        {fmtNum(prod.stock)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">{statusBadge(prod.status)}</td>
+                    <td className="px-3 py-3 text-center">
+                      <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+            <span>Showing {filtered.length} of {products.length} products</span>
+            <div className="flex items-center gap-1">
+              <button className="px-2.5 py-1.5 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-medium">1</button>
+              <button className="px-2.5 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">2</button>
+              <button className="px-2.5 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  ORDERS TAB                                                         */
+/* ------------------------------------------------------------------ */
+
+function OrdersTab() {
+  const [filter, setFilter] = useState('All')
+  const pills = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered']
+  const filtered = filter === 'All' ? orders : orders.filter((o) => o.status === filter)
+
+  const statusCounts = {
+    Pending: orders.filter((o) => o.status === 'Pending').length,
+    Processing: orders.filter((o) => o.status === 'Processing').length,
+    Shipped: orders.filter((o) => o.status === 'Shipped').length,
+    Delivered: orders.filter((o) => o.status === 'Delivered').length,
+    Returned: orders.filter((o) => o.status === 'Returned').length,
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Orders</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{orders.length} total orders</p>
+        </div>
+        <Button className="h-9 text-sm bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+          <Plus className="w-3.5 h-3.5" /> Create Order
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="xl:col-span-3">
+          <Card>
+            <CardContent className="p-0">
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+                {pills.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setFilter(p)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                      filter === p
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
               </div>
-            ) : (
-              cart.map((item) => (
-                <div key={item.id} className="flex gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                  <img src={item.image} alt={item.name} className="w-20 h-20 rounded-lg object-cover" />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm truncate">{item.name}</h4>
-                    <p className="text-emerald-600 dark:text-emerald-400 font-bold mt-1">${item.price.toFixed(2)}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <button onClick={() => onUpdateQty(item.id, -1)} className="p-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="text-sm font-medium w-6 text-center">{item.qty}</span>
-                      <button onClick={() => onUpdateQty(item.id, 1)} className="p-1 rounded bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
-                        <Plus className="w-3 h-3" />
-                      </button>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-5 py-3">Order</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Customer</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Date</th>
+                      <th className="text-center font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Items</th>
+                      <th className="text-right font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Total</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Status</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Payment</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    {filtered.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-5 py-3 font-medium text-indigo-600 dark:text-indigo-400">{order.id}</td>
+                        <td className="px-3 py-3">{order.customer}</td>
+                        <td className="px-3 py-3 text-slate-500 dark:text-slate-400">{order.date}</td>
+                        <td className="px-3 py-3 text-center">{order.items}</td>
+                        <td className="px-3 py-3 text-right font-semibold">{fmtFull(order.total)}</td>
+                        <td className="px-3 py-3">{statusBadge(order.status)}</td>
+                        <td className="px-3 py-3 text-slate-500 dark:text-slate-400">{order.payment}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+                Showing {filtered.length} of {orders.length} orders
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Order Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center py-2">
+                <DonutChart value={statusCounts.Delivered} max={orders.length} size={100} strokeWidth={12} color="#10b981" label={statusCounts.Delivered.toString()} sublabel="Delivered" />
+              </div>
+              <div className="space-y-2.5 mt-4">
+                {Object.entries(statusCounts).map(([status, count]) => {
+                  const colors = { Pending: '#94a3b8', Processing: '#f59e0b', Shipped: '#3b82f6', Delivered: '#10b981', Returned: '#ef4444' }
+                  return (
+                    <div key={status} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors[status] }} />
+                        <span className="text-xs text-slate-600 dark:text-slate-400">{status}</span>
+                      </div>
+                      <span className="text-xs font-semibold">{count}</span>
                     </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-5">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                    <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div className="flex flex-col items-end justify-between">
-                    <button onClick={() => onRemove(item.id)} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <span className="text-sm font-semibold">${(item.price * item.qty).toFixed(2)}</span>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Total Revenue</p>
+                    <p className="text-lg font-bold">{fmt(orders.reduce((s, o) => s + o.total, 0))}</p>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-
-          {cart.length > 0 && (
-            <div className="p-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span className="text-emerald-600 dark:text-emerald-400">${total.toFixed(2)}</span>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <Truck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Avg Fulfillment</p>
+                    <p className="text-lg font-bold">2.4 days</p>
+                  </div>
+                </div>
               </div>
-              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-base">
-                Checkout
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <p className="text-xs text-center text-slate-400">Shipping & taxes calculated at checkout</p>
-            </div>
-          )}
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  CUSTOMERS TAB                                                      */
+/* ------------------------------------------------------------------ */
+
+function CustomersTab() {
+  const topCustomers = [...customers].sort((a, b) => b.spent - a.spent).slice(0, 3)
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Customers</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{customers.length} registered customers</p>
+        </div>
+        <Button variant="outline" className="h-9 text-sm gap-2">
+          <Filter className="w-3.5 h-3.5" /> Export
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-5 py-3">Customer</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Email</th>
+                      <th className="text-center font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Orders</th>
+                      <th className="text-right font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Total Spent</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Last Order</th>
+                      <th className="text-left font-medium text-slate-500 dark:text-slate-400 px-3 py-3">Tier</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    {customers.map((cust) => (
+                      <tr key={cust.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                              {cust.avatar}
+                            </div>
+                            <span className="font-medium">{cust.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 text-slate-500 dark:text-slate-400">{cust.email}</td>
+                        <td className="px-3 py-3 text-center">{cust.orders}</td>
+                        <td className="px-3 py-3 text-right font-semibold">{fmtFull(cust.spent)}</td>
+                        <td className="px-3 py-3 text-slate-500 dark:text-slate-400">{cust.lastOrder}</td>
+                        <td className="px-3 py-3">{tierBadge(cust.tier)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Customer Acquisition</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AreaChart data={acquisitionData} height={140} color="#8b5cf6" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Top Customers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {topCustomers.map((cust, i) => (
+                  <div key={cust.id} className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-5">
+                      {i === 0 && <Star className="w-4 h-4 text-amber-500 fill-amber-500" />}
+                      {i === 1 && <Star className="w-4 h-4 text-slate-400 fill-slate-400" />}
+                      {i === 2 && <Star className="w-4 h-4 text-amber-700 fill-amber-700" />}
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {cust.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{cust.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{cust.orders} orders</p>
+                    </div>
+                    <span className="text-sm font-semibold">{fmtFull(cust.spent)}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Avg LTV</p>
+                  <p className="text-xl font-bold">{fmtFull(customers.reduce((s, c) => s + c.spent, 0) / customers.length)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Repeat Rate</p>
+                  <p className="text-xl font-bold">72%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  ANALYTICS TAB                                                      */
+/* ------------------------------------------------------------------ */
+
+function AnalyticsTab() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Analytics</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Detailed performance metrics for your store.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="h-9 text-sm">Last 6 months</Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Monthly Revenue</CardTitle>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Sep 2025 - Feb 2026</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <BarChart data={monthlyRevenueData} height={180} barWidth={36} gap={16} />
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total Revenue</p>
+                <p className="text-lg font-bold">{fmt(monthlyRevenueData.reduce((s, d) => s + d.value, 0))}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Monthly Avg</p>
+                <p className="text-lg font-bold">{fmt(monthlyRevenueData.reduce((s, d) => s + d.value, 0) / monthlyRevenueData.length)}</p>
+              </div>
+              <div className="flex items-center gap-1 text-emerald-600">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-semibold">+23.6%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Conversion Funnel</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {funnelSteps.map((step, i) => {
+                const widthPct = Math.max(8, step.pct)
+                const colors = ['bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-emerald-500']
+                return (
+                  <div key={step.label}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium">{step.label}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold">{fmtNum(step.value)}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 w-10 text-right">{step.pct}%</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-8 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
+                      <div
+                        className={`h-full ${colors[i]} rounded-lg transition-all duration-700 flex items-center justify-end pr-2`}
+                        style={{ width: `${widthPct}%` }}
+                      >
+                        {step.pct > 12 && <span className="text-white text-xs font-semibold">{step.pct}%</span>}
+                      </div>
+                    </div>
+                    {i < funnelSteps.length - 1 && (
+                      <div className="flex items-center gap-1 mt-1 ml-2">
+                        <ArrowDownRight className="w-3 h-3 text-slate-400" />
+                        <span className="text-[10px] text-slate-400">
+                          {Math.round((funnelSteps[i + 1].value / step.value) * 100)}% conversion to next step
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Traffic Sources</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {trafficSources.map((src) => (
+                <div key={src.source}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium">{src.source}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">{fmtNum(src.visitors)} visitors</span>
+                      <span className="text-sm font-bold w-10 text-right">{src.pct}%</span>
+                    </div>
+                  </div>
+                  <Progress value={src.pct} max={100} size="sm" color={src.color} />
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <Eye className="w-4 h-4 text-slate-400" />
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total Visitors</p>
+                <p className="text-base font-bold">{fmtNum(trafficSources.reduce((s, t) => s + t.visitors, 0))}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Product Performance</CardTitle>
+              <button className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">View all</button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
+                    <th className="text-left font-medium text-slate-500 dark:text-slate-400 pb-2">Product</th>
+                    <th className="text-right font-medium text-slate-500 dark:text-slate-400 pb-2">Views</th>
+                    <th className="text-right font-medium text-slate-500 dark:text-slate-400 pb-2">Conv.</th>
+                    <th className="text-right font-medium text-slate-500 dark:text-slate-400 pb-2">Revenue</th>
+                    <th className="text-center font-medium text-slate-500 dark:text-slate-400 pb-2 w-10" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {productPerformance.map((prod) => (
+                    <tr key={prod.name}>
+                      <td className="py-2.5 font-medium text-sm">{prod.name}</td>
+                      <td className="py-2.5 text-right text-slate-500 dark:text-slate-400">{fmtNum(prod.views)}</td>
+                      <td className="py-2.5 text-right font-semibold">{prod.conversion}%</td>
+                      <td className="py-2.5 text-right font-semibold">{fmt(prod.revenue)}</td>
+                      <td className="py-2.5 text-center">
+                        {prod.trend === 'up' ? (
+                          <TrendingUp className="w-3.5 h-3.5 text-emerald-500 inline" />
+                        ) : (
+                          <TrendingDown className="w-3.5 h-3.5 text-red-500 inline" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }
 
@@ -262,557 +969,53 @@ function CartDrawer({ open, onClose, cart, onUpdateQty, onRemove }) {
 /* ------------------------------------------------------------------ */
 
 function App() {
-  const [cart, setCart] = useState([])
-  const [wishlist, setWishlist] = useState(new Set())
-  const [cartOpen, setCartOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeTab, setActiveTab] = useState('dashboard')
 
-  const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
-
-  const addToCart = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id)
-      if (existing) {
-        return prev.map((item) => item.id === product.id ? { ...item, qty: item.qty + 1 } : item)
-      }
-      return [...prev, { ...product, qty: 1 }]
-    })
-    setCartOpen(true)
-  }
-
-  const updateQty = (id, delta) => {
-    setCart((prev) =>
-      prev
-        .map((item) => item.id === id ? { ...item, qty: item.qty + delta } : item)
-        .filter((item) => item.qty > 0)
-    )
-  }
-
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id))
-  }
-
-  const toggleWishlist = (id) => {
-    setWishlist((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  const filteredProducts = activeCategory === 'All'
-    ? featuredProducts
-    : featuredProducts.filter((p) => p.category === activeCategory)
-
-  const productCategories = ['All', ...new Set(featuredProducts.map((p) => p.category))]
+  const mainTabs = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'products', label: 'Products' },
+    { id: 'orders', label: 'Orders' },
+    { id: 'customers', label: 'Customers' },
+    { id: 'analytics', label: 'Analytics' },
+  ]
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
+      <div className="flex">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Promo Bar */}
-      <PromoBar />
+        <div className="flex-1 min-w-0">
+          <TopBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <a href="#home" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Package className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                VA Studio
-              </span>
-            </a>
-
-            {/* Desktop Nav */}
-            <div className="hidden md:flex gap-8">
-              {navLinks.map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors relative group"
-                >
-                  {label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all duration-300" />
-                </a>
-              ))}
+          <main className="p-4 lg:p-8 max-w-[1600px] mx-auto">
+            <div className="mb-6 lg:hidden">
+              <Tabs tabs={mainTabs} active={activeTab} onChange={setActiveTab} className="overflow-x-auto" />
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              <div className="relative hidden sm:block">
-                <Input
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-56 lg:w-64 pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-full text-sm"
-                />
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              </div>
+            <TabContent id="dashboard" active={activeTab}>
+              <DashboardTab />
+            </TabContent>
 
-              <button className="relative p-2 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-colors">
-                <Heart className="w-5 h-5" />
-                {wishlist.size > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold">
-                    {wishlist.size}
-                  </span>
-                )}
-              </button>
+            <TabContent id="products" active={activeTab}>
+              <ProductsTab />
+            </TabContent>
 
-              <button
-                onClick={() => setCartOpen(true)}
-                className="relative p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 transition-colors"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] flex items-center justify-center font-bold animate-pulse">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+            <TabContent id="orders" active={activeTab}>
+              <OrdersTab />
+            </TabContent>
 
-              {/* Mobile menu toggle */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-slate-600 dark:text-slate-400"
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
+            <TabContent id="customers" active={activeTab}>
+              <CustomersTab />
+            </TabContent>
 
-          {/* Mobile menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
-              {navLinks.map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 transition-colors"
-                >
-                  {label}
-                </a>
-              ))}
-              <div className="pt-3 px-3">
-                <div className="relative">
-                  <Input placeholder="Search..." className="w-full pl-10 bg-slate-50 dark:bg-slate-800 rounded-full text-sm" />
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                </div>
-              </div>
-            </div>
-          )}
+            <TabContent id="analytics" active={activeTab}>
+              <AnalyticsTab />
+            </TabContent>
+          </main>
         </div>
-      </nav>
+      </div>
 
-      {/* Hero Section */}
-      <section id="home" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 dark:from-emerald-500/5 dark:via-teal-500/3 dark:to-cyan-500/5" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iLjAyIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnYtMmgtNHY2aDR2MmgtNnYtMTBoNnYtMmgtOHYxNGg4di00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium mb-6">
-                <Zap className="w-4 h-4" />
-                New Season Collection 2026
-              </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                Discover Products
-                <br />
-                <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-                  You'll Love
-                </span>
-              </h1>
-              <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-lg leading-relaxed">
-                Curated collections of premium products at unbeatable prices. Free shipping, easy returns, and 24/7 customer support.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 h-12 text-base shadow-lg shadow-emerald-600/25">
-                  Shop Now
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                <Button size="lg" variant="outline" className="rounded-full px-8 h-12 text-base border-slate-300 dark:border-slate-700">
-                  View Catalog
-                </Button>
-              </div>
-              <div className="flex items-center gap-8 mt-10 pt-8 border-t border-slate-200 dark:border-slate-800">
-                <div>
-                  <p className="text-2xl font-bold">10K+</p>
-                  <p className="text-sm text-slate-500">Products</p>
-                </div>
-                <div className="w-px h-10 bg-slate-200 dark:bg-slate-800" />
-                <div>
-                  <p className="text-2xl font-bold">50K+</p>
-                  <p className="text-sm text-slate-500">Customers</p>
-                </div>
-                <div className="w-px h-10 bg-slate-200 dark:bg-slate-800" />
-                <div>
-                  <p className="text-2xl font-bold">4.9</p>
-                  <p className="text-sm text-slate-500">Rating</p>
-                </div>
-              </div>
-            </div>
-            <div className="relative hidden md:block">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img
-                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=700&fit=crop"
-                  alt="Featured collection"
-                  className="w-full h-[500px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <span className="inline-block px-3 py-1 bg-white/90 dark:bg-slate-900/90 rounded-full text-sm font-medium mb-2">
-                    Trending Now
-                  </span>
-                  <h3 className="text-white text-xl font-bold">Spring Collection</h3>
-                </div>
-              </div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-xl rotate-12">
-                <div className="-rotate-12 text-center">
-                  <p className="text-2xl font-black">30%</p>
-                  <p className="text-xs uppercase tracking-wide">Off</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Badges */}
-      <section className="py-8 border-y border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Truck, title: 'Free Shipping', desc: 'On orders over $50' },
-              { icon: Shield, title: 'Secure Payment', desc: '100% protected' },
-              { icon: RotateCcw, title: 'Easy Returns', desc: '30-day guarantee' },
-              { icon: Headphones, title: '24/7 Support', desc: 'Always here to help' },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">{title}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section id="categories" className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Shop by Category</h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">Browse our curated collections</p>
-            </div>
-            <a href="#" className="hidden sm:flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium text-sm hover:underline">
-              View All <ChevronRight className="w-4 h-4" />
-            </a>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map((cat) => (
-              <a
-                key={cat.id}
-                href="#products"
-                onClick={() => setActiveCategory(cat.name)}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/5] cursor-pointer"
-              >
-                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-white font-semibold text-sm">{cat.name}</h3>
-                  <p className="text-white/70 text-xs mt-0.5">{cat.count} items</p>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section id="products" className="py-16 bg-slate-50/50 dark:bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Featured Products</h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">Handpicked just for you</p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {productCategories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    activeCategory === cat
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-slate-200 dark:border-slate-700'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={addToCart}
-                onToggleWishlist={toggleWishlist}
-                wishlist={wishlist}
-              />
-            ))}
-          </div>
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-16">
-              <Package className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-              <p className="text-slate-500 text-lg">No products found in this category</p>
-            </div>
-          )}
-          <div className="text-center mt-10">
-            <Button variant="outline" size="lg" className="rounded-full px-8 border-slate-300 dark:border-slate-700">
-              Load More Products
-              <ChevronDown className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Banner / CTA */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden">
-            <img
-              src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=400&fit=crop"
-              alt="Special offer"
-              className="w-full h-64 md:h-80 object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 to-emerald-900/40" />
-            <div className="absolute inset-0 flex items-center">
-              <div className="px-8 md:px-16 max-w-xl">
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur rounded-full text-white text-sm font-medium mb-4">
-                  Limited Time Offer
-                </span>
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                  Up to 50% Off Everything
-                </h2>
-                <p className="text-white/80 mb-6">
-                  Don't miss our biggest sale of the season. Premium products at unbeatable prices.
-                </p>
-                <Button size="lg" className="bg-white text-emerald-900 hover:bg-white/90 rounded-full px-8 h-12 font-semibold shadow-xl">
-                  Shop the Sale
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Flash Deals */}
-      <section id="deals" className="py-16 bg-slate-50/50 dark:bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl md:text-3xl font-bold">Flash Deals</h2>
-                <span className="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-semibold animate-pulse">
-                  LIVE
-                </span>
-              </div>
-              <p className="text-slate-500 dark:text-slate-400">Limited time offers - grab them before they're gone!</p>
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {dealProducts.map((deal) => (
-              <DealCard key={deal.id} deal={deal} onAddToCart={addToCart} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section id="about" className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold">What Our Customers Say</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-2">Trusted by thousands of happy shoppers</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t) => (
-              <Card key={t.id} className="p-6 border-slate-200 dark:border-slate-800 hover:shadow-lg transition-shadow">
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < t.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
-                  ))}
-                </div>
-                <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                  <div>
-                    <p className="font-semibold text-sm">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.role}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Brands */}
-      <section className="py-12 border-y border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-8 uppercase tracking-wider font-medium">Trusted by leading brands</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            {brands.map((brand) => (
-              <span key={brand} className="text-xl md:text-2xl font-bold text-slate-300 dark:text-slate-700 hover:text-slate-500 dark:hover:text-slate-500 transition-colors cursor-default">
-                {brand}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-700 p-8 md:p-16 text-center overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ij48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnYtMmgtNHY2aDR2MmgtNnYtMTBoNnYtMmgtOHYxNGg4di00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-            <div className="relative">
-              <Mail className="w-12 h-12 mx-auto text-white/80 mb-4" />
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">Stay in the Loop</h2>
-              <p className="text-white/80 max-w-md mx-auto mb-8">
-                Subscribe to our newsletter for exclusive deals, new arrivals, and insider-only discounts.
-              </p>
-              {subscribed ? (
-                <div className="flex items-center justify-center gap-2 text-white font-medium">
-                  <Shield className="w-5 h-5" />
-                  Thanks for subscribing! Check your inbox.
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 rounded-full h-12"
-                  />
-                  <Button
-                    onClick={() => { if (email) setSubscribed(true) }}
-                    className="bg-white text-emerald-700 hover:bg-white/90 rounded-full h-12 px-8 font-semibold shrink-0"
-                  >
-                    Subscribe
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 dark:bg-slate-950 text-slate-400 pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            {/* Brand */}
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-white">VA Studio</span>
-              </div>
-              <p className="text-sm leading-relaxed mb-4">
-                Your one-stop destination for premium products at unbeatable prices. Quality guaranteed.
-              </p>
-              <div className="flex gap-3">
-                {[Facebook, Twitter, Instagram, Youtube].map((Icon, i) => (
-                  <a key={i} href="#" className="p-2 rounded-lg bg-slate-800 hover:bg-emerald-600 hover:text-white transition-colors">
-                    <Icon className="w-4 h-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
-              <ul className="space-y-2.5">
-                {['Home', 'Shop', 'Categories', 'Deals', 'New Arrivals'].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm hover:text-emerald-400 transition-colors">{link}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Customer Service */}
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
-              <ul className="space-y-2.5">
-                {['Help Center', 'Shipping Info', 'Returns', 'Order Tracking', 'Size Guide'].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm hover:text-emerald-400 transition-colors">{link}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h4>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2 text-sm">
-                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
-                  123 Commerce St, San Francisco, CA 94102
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <Phone className="w-4 h-4 shrink-0 text-emerald-400" />
-                  (555) 123-4567
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <Mail className="w-4 h-4 shrink-0 text-emerald-400" />
-                  support@vastudio.com
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom bar */}
-          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm">&copy; 2026 VA Studio. All rights reserved.</p>
-            <div className="flex gap-6">
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((link) => (
-                <a key={link} href="#" className="text-sm hover:text-emerald-400 transition-colors">{link}</a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Cart Drawer */}
-      <CartDrawer
-        open={cartOpen}
-        onClose={() => setCartOpen(false)}
-        cart={cart}
-        onUpdateQty={updateQty}
-        onRemove={removeFromCart}
-      />
+      <ThemeSwitcher />
     </div>
   )
 }

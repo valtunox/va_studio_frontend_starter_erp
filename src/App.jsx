@@ -1,12 +1,12 @@
 /**
  * VA Studio Frontend Starter - Main Application Entry Point
  *
- * This starter app now defaults to the Gym template as the main interface.
+ * This starter app now defaults to the E-commerce template as the main interface.
  * The welcome/showcase functionality has been moved to va_studio_ai_builder_frontend.
  *
  * Routes:
- *   /                          → Gym template (default)
- *   /preview/:templateId       → Live template preview (ecommerce, saas, portfolio, etc.)
+ *   /                          → E-commerce template (default)
+ *   /preview/:templateId       → Live template preview (saas, portfolio, etc.)
  *
  * Backend connectivity:
  *   A connectivity test banner appears at the top showing real-time backend status.
@@ -22,12 +22,13 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider, useParams, Link } from 'react-router-dom'
 import { BackendStatusProvider, useBackendContext } from './context/BackendStatusContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 /* ------------------------------------------------------------------ */
-/*  Default Gym Template (main app interface)                          */
+/*  Default E-commerce Template (main app interface)                   */
 /* ------------------------------------------------------------------ */
 
-const GymApp = lazy(() => import('../templates/gym/App.jsx'))
+const EcommerceApp = lazy(() => import('../templates/ecommerce/App.jsx'))
 
 /* ------------------------------------------------------------------ */
 /*  Lazy-loaded template components (code-split per template)          */
@@ -41,15 +42,10 @@ const templates = {
   blog: lazy(() => import('../templates/blog/App.jsx')),
   crm: lazy(() => import('../templates/crm/App.jsx')),
   erp: lazy(() => import('../templates/erp/App.jsx')),
-  social: lazy(() => import('../templates/social/App.jsx')),
   dashboard: lazy(() => import('../templates/dashboard/App.jsx')),
-  nutrition: lazy(() => import('../templates/nutrition/App.jsx')),
-  health: lazy(() => import('../templates/health/App.jsx')),
   diet: lazy(() => import('../templates/diet/App.jsx')),
-  gym: lazy(() => import('../templates/gym/App.jsx')),
   sports: lazy(() => import('../templates/sports/App.jsx')),
   finance: lazy(() => import('../templates/finance/App.jsx')),
-  accounting: lazy(() => import('../templates/accounting/App.jsx')),
   sales: lazy(() => import('../templates/sales/App.jsx')),
   marketing: lazy(() => import('../templates/marketing/App.jsx')),
   login: lazy(() => import('../templates/login/App.jsx')),
@@ -127,7 +123,7 @@ function ConnectivityBanner() {
 /* ------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------ */
-/*  Home Page (Gym Template with Connectivity Banner)                  */
+/*  Home Page (E-commerce Template with Connectivity Banner)           */
 /* ------------------------------------------------------------------ */
 
 function HomePage() {
@@ -135,7 +131,7 @@ function HomePage() {
     <>
       <ConnectivityBanner />
       <Suspense fallback={<TemplateLoader />}>
-        <GymApp />
+        <EcommerceApp />
       </Suspense>
     </>
   )
@@ -251,7 +247,7 @@ function TemplatePreview() {
 /* ------------------------------------------------------------------ */
 /*  Router                                                             */
 /*                                                                     */
-/*  /                          → Gym template (default)                */
+/*  /                          → E-commerce template (default)         */
 /*  /preview/:templateId       → Live preview of a specific template   */
 /*  /templates/:templateId     → Alternative template route            */
 /* ------------------------------------------------------------------ */
@@ -272,8 +268,10 @@ const router = createBrowserRouter([
  */
 export default function App() {
   return (
-    <BackendStatusProvider>
-      <RouterProvider router={router} />
-    </BackendStatusProvider>
+    <ThemeProvider>
+      <BackendStatusProvider>
+        <RouterProvider router={router} />
+      </BackendStatusProvider>
+    </ThemeProvider>
   )
 }
