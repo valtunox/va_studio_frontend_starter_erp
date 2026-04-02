@@ -1,11 +1,9 @@
+# For VM deploy only: frontend uses pre-pulled image (no build). Nginx builds from ./nginx.
 services:
   frontend:
     container_name: studioapp-frontend
-    image: ${FRONTEND_IMAGE:-studioapp-frontend:latest}
+    image: ${FRONTEND_IMAGE}
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "3008:3008"
     deploy:
