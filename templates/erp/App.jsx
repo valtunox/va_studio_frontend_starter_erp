@@ -398,14 +398,17 @@ function App({ onNavigate }) {
           <div className="flex items-center justify-between">
             <button
               onClick={() => setOrgSwitcherOpen(!orgSwitcherOpen)}
-              className="flex items-center gap-2 flex-1 min-w-0"
+              className="flex items-center gap-2.5 flex-1 min-w-0"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-600 to-blue-700 flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-4 h-4 text-white" />
+              <div className="w-9 h-9 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5"><path d="M4 20V4h4l8 12V4h4v16h-4L8 8v12H4z" fill="currentColor"/></svg>
               </div>
               {!sidebarCollapsed && (
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-sm font-bold font-display truncate">Nexus Manufacturing</span>
+                  <div className="flex flex-col leading-tight text-left min-w-0">
+                    <span className="text-sm font-bold font-display truncate">Nexus Manufacturing</span>
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">Operating system</span>
+                  </div>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                 </div>
               )}
@@ -422,7 +425,7 @@ function App({ onNavigate }) {
           </div>
           {orgSwitcherOpen && !sidebarCollapsed && (
             <div className="mt-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-2 space-y-1">
-              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 font-medium">
+              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-medium">
                 <Building2 className="w-4 h-4" />
                 Nexus Manufacturing
               </button>
@@ -453,7 +456,7 @@ function App({ onNavigate }) {
                     onClick={() => handleSidebarLink(tab)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400'
+                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                     } ${sidebarCollapsed ? 'justify-center px-2' : ''}`}
                     title={sidebarCollapsed ? label : undefined}
@@ -512,8 +515,15 @@ function App({ onNavigate }) {
         <main className="p-6 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                <span>Workspace</span>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-slate-900 dark:text-slate-100 font-medium">Nexus Manufacturing</span>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-slate-900 dark:text-slate-100 font-medium">Operations</span>
+              </div>
               <h1 className="text-2xl font-bold font-display">Operations Dashboard</h1>
-              <p className="text-slate-500 text-sm mt-1">Real-time overview across all business units</p>
+              <p className="text-slate-500 text-sm mt-1">Real-time overview across all business units · Feb 25, 2026</p>
             </div>
             <Tabs tabs={mainTabs} active={activeTab} onChange={setActiveTab} />
           </div>
@@ -523,20 +533,74 @@ function App({ onNavigate }) {
           {/* ============================================================ */}
           <TabContent id="overview" active={activeTab}>
             <div className="space-y-6">
+              {/* Command-center hero */}
+              <section className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white">
+                <div className="pointer-events-none absolute -right-20 -top-16 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl" />
+                <div className="pointer-events-none absolute -left-10 bottom-0 w-64 h-64 rounded-full bg-sky-500/10 blur-3xl" />
+                <div className="relative grid lg:grid-cols-[1.2fr_1fr] gap-6 p-6 lg:p-8">
+                  <div className="min-w-0">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-indigo-300/90 mb-3">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      All systems operational · 3 plants online
+                    </div>
+                    <h2 className="text-3xl lg:text-4xl font-bold font-display tracking-tight">
+                      Good morning, Sarah.
+                    </h2>
+                    <p className="text-slate-300/80 text-sm lg:text-base mt-2 max-w-xl">
+                      Revenue is pacing <span className="text-emerald-300 font-semibold">14.2% above plan</span> this month.
+                      18 shipments need your attention before end of day.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mt-5">
+                      <button type="button" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-slate-900 text-xs font-semibold hover:bg-slate-100 transition">
+                        <ClipboardList className="w-3.5 h-3.5" />
+                        Open operations queue
+                      </button>
+                      <button type="button" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 border border-white/20 text-white text-xs font-semibold hover:bg-white/15 transition">
+                        <Activity className="w-3.5 h-3.5" />
+                        Live plant feed
+                      </button>
+                      <button type="button" onClick={() => setActiveTab('finance')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 border border-white/20 text-white text-xs font-semibold hover:bg-white/15 transition">
+                        <PieChart className="w-3.5 h-3.5" />
+                        Month-end close
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-widest text-slate-400 font-semibold">Revenue MTD</p>
+                      <p className="text-2xl font-bold font-display tabular-nums mt-1">$2.4M</p>
+                      <p className="text-[11px] text-emerald-300 mt-0.5">+14.2% vs plan</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-widest text-slate-400 font-semibold">Open orders</p>
+                      <p className="text-2xl font-bold font-display tabular-nums mt-1">428</p>
+                      <p className="text-[11px] text-amber-300 mt-0.5">18 urgent</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-widest text-slate-400 font-semibold">Fill rate</p>
+                      <p className="text-2xl font-bold font-display tabular-nums mt-1">96.4%</p>
+                      <p className="text-[11px] text-emerald-300 mt-0.5">+1.2pp</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               {/* KPI Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 {kpis.map(({ label, value, change, trend, icon: Icon }) => (
-                  <Card key={label} className="border-slate-200 dark:border-slate-800">
+                  <Card key={label} className="border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <Icon className="w-4 h-4 text-slate-400" />
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                          <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        </div>
                         {trend === 'up' && <ArrowUpRight className="w-4 h-4 text-emerald-500" />}
-                        {trend === 'down' && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+                        {trend === 'down' && <ArrowDownRight className="w-4 h-4 text-rose-500" />}
                         {trend === 'neutral' && <AlertTriangle className="w-4 h-4 text-amber-500" />}
                       </div>
-                      <p className="text-xl font-bold font-display">{value}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-                      <p className={`text-xs mt-1 ${trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : trend === 'down' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>{change}</p>
+                      <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">{label}</p>
+                      <p className="text-2xl font-bold font-display tabular-nums tracking-tight mt-1">{value}</p>
+                      <p className={`text-xs mt-1 font-medium ${trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : trend === 'down' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`}>{change}</p>
                     </CardContent>
                   </Card>
                 ))}
